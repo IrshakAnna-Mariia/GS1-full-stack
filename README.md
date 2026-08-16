@@ -87,6 +87,24 @@ Open **http://localhost:5173** (or the port Vite prints if 5173 is busy).
 
 Both backend and frontend must be running for the app to work.
 
+## Deploying to Vercel
+
+### Backend
+
+Set Supabase and database env vars from `.env.example` in the Vercel project settings.
+
+### Frontend
+
+Set this **before build** (Vite bakes env vars in at build time):
+
+```env
+VITE_API_BASE_URL=https://gs-1-full-stack-be.vercel.app
+```
+
+Use your real backend URL. The default `/api` only works locally with the Vite dev proxy.
+
+`/auth/me` requires `Authorization: Bearer <access_token>`. Opening that URL in the browser tab will always return `Missing or invalid authorization header` — that endpoint is for the app to call after login, not for direct visits.
+
 ## Scripts
 
 | Command | Description |
