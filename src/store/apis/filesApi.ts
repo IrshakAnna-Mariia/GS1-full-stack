@@ -30,8 +30,12 @@ export const filesApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, arg) => [
-        { type: 'File', id: arg.folderId },
-        { type: 'Folder', id: arg.folderId },
+        ...(arg.folderId
+          ? [
+              { type: 'File' as const, id: arg.folderId },
+              { type: 'Folder' as const, id: arg.folderId },
+            ]
+          : []),
         'Folder',
       ],
     }),

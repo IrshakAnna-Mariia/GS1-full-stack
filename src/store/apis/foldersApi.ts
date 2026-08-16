@@ -15,7 +15,7 @@ export const foldersRootTagId = 'ROOT'
 
 export const foldersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    findRoot: builder.query<DataRoomContents, void>({
+    findRootFolder: builder.query<DataRoomContents, void>({
       query: () => '/folders',
       transformResponse: (response: FolderDto[]): DataRoomContents => ({
         items: response.map(folderToItem),
@@ -23,11 +23,11 @@ export const foldersApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: 'Folder', id: foldersRootTagId }],
     }),
-    findOne: builder.query<FolderDto, string>({
+    findOneFolder: builder.query<FolderDto, string>({
       query: (id) => `/folders/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Folder', id }],
     }),
-    getContents: builder.query<DataRoomContents, string>({
+    getContentsOfFolder: builder.query<DataRoomContents, string>({
       async queryFn(folderId, _api, _extraOptions, baseQuery) {
         const contentsResult = await baseQuery(`/folders/${folderId}/contents`)
 
@@ -63,15 +63,19 @@ export const foldersApi = baseApi.injectEndpoints({
       },
       providesTags: (_result, _error, folderId) => [{ type: 'Folder', id: folderId }],
     }),
-    create: builder.mutation<FolderDto, CreateFolderDto>({
-      query: (body) => ({
+    createFolder: builder.mutation<FolderDto, CreateFolderDto>({
+      query: ({ name, parentId }) => ({
         url: '/folders',
         method: 'POST',
-        body,
+        body: parentId ? { name, parentId } : { name },
       }),
-      invalidatesTags: [{ type: 'Folder', id: foldersRootTagId }, 'Folder'],
+      invalidatesTags: (result, _error, arg) => [
+        { type: 'Folder', id: foldersRootTagId },
+        ...(arg.parentId ? [{ type: 'Folder' as const, id: arg.parentId }] : []),
+        ...(result ? [{ type: 'Folder' as const, id: result.id }] : []),
+      ],
     }),
-    update: builder.mutation<FolderDto, { id: string; dto: UpdateFolderDto }>({
+    updateFolder: builder.mutation<FolderDto, { id: string; dto: UpdateFolderDto }>({
       query: ({ id, dto }) => ({
         url: `/folders/${id}`,
         method: 'PATCH',
@@ -83,7 +87,7 @@ export const foldersApi = baseApi.injectEndpoints({
         'Folder',
       ],
     }),
-    remove: builder.mutation<FolderDto, string>({
+    removeFolder: builder.mutation<FolderDto, string>({
       query: (id) => ({
         url: `/folders/${id}`,
         method: 'DELETE',
@@ -94,10 +98,10 @@ export const foldersApi = baseApi.injectEndpoints({
 })
 
 export const {
-  useFindRootQuery,
-  useFindOneQuery,
-  useGetContentsQuery,
-  useCreateMutation: useCreateFolderMutation,
-  useUpdateMutation: useUpdateFolderMutation,
-  useRemoveMutation: useRemoveFolderMutation,
+  useFindRootFolderQuery: useFindRootQuery,
+  useFindOneFolderQuery: useFindOneQuery,
+  useGetContentsOfFolderQuery: useGetContentsQuery,
+  useCreateFolderMutation: useCreateFolderMutation,
+  useUpdateFolderMutation: useUpdateFolderMutation,
+  useRemoveFolderMutation: useRemoveFolderMutation,
 } = foldersApi

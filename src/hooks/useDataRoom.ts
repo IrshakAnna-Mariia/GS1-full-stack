@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { useToast } from '@/hooks/useToast'
 import {
   useCreateFileMutation,
   useCreateFolderMutation,
@@ -22,11 +23,14 @@ import {
   updateUploadEntry,
 } from '@/store/slices/uploadsSlice'
 import type { DataRoomItem } from '@/types/dataRoom'
+import { getApiErrorMessage } from '@/utils/apiError'
+import { buildFileFolderTarget } from '@/utils/fileFolderTarget'
 import { uploadToStorage } from '@/utils/uploadToStorage'
 
 const useDataRoom = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const { toast } = useToast()
   const { folderId } = useParams()
   const currentFolderId = folderId ?? null
   const uploadFilesRef = useRef<Map<string, File>>(new Map())
@@ -89,12 +93,28 @@ const useDataRoom = () => {
 
   const createFolderHandler = useCallback(
     async (name: string) => {
-      await createFolder({
-        name,
-        ...(currentFolderId ? { parentId: currentFolderId } : {}),
-      })
+      const trimmed = name.trim()
+      if (!trimmed) {
+        throw new Error('Folder name is required')
+      }
+
+      try {
+        await createFolder({
+          name: trimmed,
+          ...(currentFolderId ? { parentId: currentFolderId } : {}),
+        }).unwrap()
+
+        toast({ title: 'Folder created', description: trimmed })
+      } catch (error) {
+        toast({
+          title: 'Failed to create folder',
+          description: getApiErrorMessage(error, 'Could not create folder'),
+          variant: 'destructive',
+        })
+        throw error
+      }
     },
-    [createFolder, currentFolderId],
+    [createFolder, currentFolderId, toast],
   )
 
   const renameItem = useCallback(
@@ -125,7 +145,7 @@ const useDataRoom = () => {
         return
       }
 
-      await removeFile({ id: item.id, folderId: item.parentId ?? '' })
+      await removeFile({ id: item.id, folderId: item.parentId! })
     },
     [currentFolderId, navigate, removeFile, removeFolder],
   )
@@ -153,7 +173,11 @@ const useDataRoom = () => {
 
   const uploadSingleFile = useCallback(
     async (uploadId: string, file: File) => {
-      if (!currentFolderId) {
+  const folderTarget = buildFileFolderTarget({
+        folderId: currentFolder?.id ?? currentFolderId,
+      })
+
+      if (!folderTarget) {
         dispatch(
           updateUploadEntry({
             id: uploadId,
@@ -169,8 +193,8 @@ const useDataRoom = () => {
       try {
         const { uploadUrl, storageKey } = await requestUploadUrl({
           fileName: file.name,
-          folderId: currentFolderId,
           contentType: file.type || 'application/pdf',
+          ...folderTarget,
         }).unwrap()
 
         await uploadToStorage(uploadUrl, file, (progress) => {
@@ -184,8 +208,8 @@ const useDataRoom = () => {
 
         await createFile({
           name: file.name,
-          folderId: currentFolderId,
           storageKey,
+          ...folderTarget,
         }).unwrap()
 
         dispatch(
@@ -201,13 +225,20 @@ const useDataRoom = () => {
             id: uploadId,
             patch: {
               status: 'error',
-              error: error instanceof Error ? error.message : 'Upload failed',
+              error: getApiErrorMessage(error, 'Upload failed'),
             },
           }),
         )
       }
     },
-    [createFile, currentFolderId, dispatch, removeUploadLater, requestUploadUrl],
+    [
+      createFile,
+      currentFolder,
+      currentFolderId,
+      dispatch,
+      removeUploadLater,
+      requestUploadUrl,
+    ],
   )
 
   const startUploads = useCallback(

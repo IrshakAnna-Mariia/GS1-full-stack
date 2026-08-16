@@ -15,6 +15,7 @@ import { itemToShareResourceType, type ShareTarget } from '@/types/shares'
 
 const DataRoom = () => {
   const {
+    currentFolderId,
     currentItems,
     breadcrumbPath,
     isLoading,
@@ -98,7 +99,7 @@ const DataRoom = () => {
         />
 
         <DataRoomUpload
-          canUpload={canUpload}
+          canUpload={canUpload && dialog.type === 'closed'}
           uploads={uploads}
           onUpload={startUploads}
           onRetry={retryUpload}
@@ -120,7 +121,9 @@ const DataRoom = () => {
           <div className="px-3 py-12 text-center text-sm text-muted-foreground">
             {readOnly
               ? 'This folder is empty.'
-              : 'This folder is empty. Create a folder or upload files to get started.'}
+              : currentFolderId
+                ? 'This folder is empty. Create a subfolder or upload PDF files here.'
+                : 'No folders yet. Use New folder to create one, then open it to upload files.'}
           </div>
         )}
 
@@ -145,6 +148,7 @@ const DataRoom = () => {
         dialog={dialog}
         folders={folders}
         folderItems={currentItems}
+        isAtRoot={!currentFolderId}
         onClose={closeDialog}
         onCreateFolder={createFolder}
         onRename={renameItem}

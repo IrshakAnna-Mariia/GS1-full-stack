@@ -14,11 +14,14 @@ export type UploadUrlResponse = {
   storageKey: string
 }
 
+export type FileFolderTarget =
+  | { folderId: string; folderName?: never }
+  | { folderName: string; folderId?: never }
+
 export type CreateFileDto = {
   name: string
-  folderId: string
   storageKey: string
-}
+} & FileFolderTarget
 
 export type UpdateFileDto = {
   name?: string
@@ -27,9 +30,8 @@ export type UpdateFileDto = {
 
 export type RequestUploadUrlDto = {
   fileName: string
-  folderId: string
   contentType: string
-}
+} & FileFolderTarget
 
 export type FileSignedUrlResponse = {
   signedUrl: string | null

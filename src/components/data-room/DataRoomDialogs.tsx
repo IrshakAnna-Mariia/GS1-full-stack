@@ -31,8 +31,9 @@ type DataRoomDialogsProps = {
   dialog: DataRoomDialogState
   folders: DataRoomItem[]
   folderItems: DataRoomItem[]
+  isAtRoot?: boolean
   onClose: () => void
-  onCreateFolder: (name: string) => void
+  onCreateFolder: (name: string) => Promise<void>
   onRename: (item: DataRoomItem, name: string) => Promise<void>
   onDelete: (item: DataRoomItem) => void
   onMove: (item: DataRoomItem, targetFolderId: string) => Promise<void>
@@ -42,6 +43,7 @@ const DataRoomDialogs = ({
   dialog,
   folders,
   folderItems,
+  isAtRoot = false,
   onClose,
   onCreateFolder,
   onRename,
@@ -51,6 +53,7 @@ const DataRoomDialogs = ({
   const [value, setValue] = useState('')
   const [renameError, setRenameError] = useState<string | null>(null)
   const [suggestedName, setSuggestedName] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (dialog.type === 'rename') {
@@ -73,8 +76,16 @@ const DataRoomDialogs = ({
     event.preventDefault()
 
     if (dialog.type === 'new-folder') {
-      onCreateFolder(value)
-      onClose()
+      const trimmed = value.trim()
+      if (!trimmed) return
+
+      setIsSubmitting(true)
+      try {
+        await onCreateFolder(trimmed)
+        onClose()
+      } finally {
+        setIsSubmitting(false)
+      }
       return
     }
 
@@ -110,7 +121,9 @@ const DataRoomDialogs = ({
               <DialogDescription>
                 {dialog.type === 'rename'
                   ? 'Enter a new name for this item.'
-                  : 'Create a folder in the current location.'}
+                  : isAtRoot
+                    ? 'Creates a top-level folder in your Data Room. Open it to upload files.'
+                    : 'Creates a subfolder in the current folder.'}
               </DialogDescription>
             </DialogHeader>
 
@@ -152,8 +165,8 @@ const DataRoomDialogs = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!value.trim()}>
-                {dialog.type === 'rename' ? 'Save' : 'Create'}
+              <Button type="submit" disabled={!value.trim() || isSubmitting}>
+                {dialog.type === 'rename' ? 'Save' : isSubmitting ? 'Creating...' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

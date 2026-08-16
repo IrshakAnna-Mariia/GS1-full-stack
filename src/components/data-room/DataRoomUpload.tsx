@@ -52,7 +52,7 @@ const DataRoomUpload = ({ canUpload, uploads, onUpload, onRetry }: DataRoomUploa
         </Button>
         {!canUpload && (
           <p className="mt-3 text-xs text-muted-foreground">
-            Open a folder to upload files.
+            Uploads require a folder. Create one with New folder, then open it.
           </p>
         )}
       </div>
