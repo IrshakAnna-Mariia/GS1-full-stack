@@ -1,7 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 
 import AuthForm from '@/components/auth/AuthForm'
-import { useGetMeQuery } from '@/store/apis'
 import { hasStoredSession } from '@/utils/authStorage'
 
 type AuthPageProps = {
@@ -10,22 +9,12 @@ type AuthPageProps = {
 
 const AuthPage = ({ mode }: AuthPageProps) => {
   const location = useLocation()
-  const hasSession = hasStoredSession()
-  const meQuery = useGetMeQuery(undefined, { skip: !hasSession })
 
   const redirectTo =
     (location.state as { from?: string } | null)?.from ?? '/data-room'
 
-  if (hasSession && meQuery.isSuccess) {
+  if (hasStoredSession()) {
     return <Navigate to={redirectTo} replace />
-  }
-
-  if (hasSession && meQuery.isLoading) {
-    return (
-      <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">
-        Checking session...
-      </div>
-    )
   }
 
   return (
