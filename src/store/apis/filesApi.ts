@@ -14,7 +14,7 @@ export const filesApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, folderId) => [{ type: 'File', id: folderId }],
     }),
     getSignedUrl: builder.query<FileSignedUrlResponse, string>({
-      query: (id) => `/files/${id}/signed-url`,
+      query: (id) => `/files/${id}/download`,
     }),
     requestUploadUrl: builder.mutation<UploadUrlResponse, RequestUploadUrlDto>({
       query: (body) => ({

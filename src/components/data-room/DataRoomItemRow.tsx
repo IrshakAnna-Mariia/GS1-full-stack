@@ -6,6 +6,7 @@ import { cn } from '@/utils/utils'
 
 type DataRoomItemRowProps = {
   item: DataRoomItem
+  readOnly?: boolean
   onOpen: (item: DataRoomItem) => void
   onPreview: (item: DataRoomItem) => void
   onRename: (item: DataRoomItem) => void
@@ -16,6 +17,7 @@ type DataRoomItemRowProps = {
 
 const DataRoomItemRow = ({
   item,
+  readOnly = false,
   onOpen,
   onPreview,
   onRename,
@@ -52,6 +54,7 @@ const DataRoomItemRow = ({
 
       <DataRoomItemActions
         item={item}
+        readOnly={readOnly}
         onPreview={onPreview}
         onRename={onRename}
         onMove={onMove}

@@ -7,9 +7,11 @@ import DataRoomDialogs, {
 import DataRoomItemRow from '@/components/data-room/DataRoomItemRow'
 import DataRoomToolbar from '@/components/data-room/DataRoomToolbar'
 import DataRoomUpload from '@/components/data-room/DataRoomUpload'
+import ShareDialog from '@/components/data-room/ShareDialog'
 import useDataRoom from '@/hooks/useDataRoom'
-import { useFindRootQuery } from '@/store/apis'
+import { useFindRootQuery, useGetMineQuery } from '@/store/apis'
 import type { DataRoomItem } from '@/types/dataRoom'
+import { itemToShareResourceType, type ShareTarget } from '@/types/shares'
 
 const DataRoom = () => {
   const {
@@ -17,6 +19,7 @@ const DataRoom = () => {
     breadcrumbPath,
     isLoading,
     isError,
+    readOnly,
     canUpload,
     uploads,
     navigateToFolder,
@@ -30,7 +33,9 @@ const DataRoom = () => {
   } = useDataRoom()
 
   const { data: rootContents } = useFindRootQuery()
+  const { data: dataRoom } = useGetMineQuery()
   const [dialog, setDialog] = useState<DataRoomDialogState>({ type: 'closed' })
+  const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null)
 
   const folders = useMemo(
     () => rootContents?.items.filter((item) => item.type === 'folder') ?? [],
@@ -51,15 +56,46 @@ const DataRoom = () => {
     }
   }
 
+  const handleShareItem = (item: DataRoomItem) => {
+    setShareTarget({
+      resourceType: itemToShareResourceType(item.type),
+      resourceId: item.id,
+      name: item.name,
+    })
+  }
+
+  const handleShareDataRoom = () => {
+    if (!dataRoom) return
+
+    setShareTarget({
+      resourceType: 'DATA_ROOM',
+      resourceId: dataRoom.id,
+      name: dataRoom.name,
+    })
+  }
+
   return (
     <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      {readOnly && (
+        <div className="border-b bg-muted/40 px-6 py-3">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Read-only shared view
+          </p>
+          <p className="text-sm">You have viewer access to this folder.</p>
+        </div>
+      )}
+
       <header className="space-y-4 border-b px-6 py-5">
         <div className="space-y-1">
           <h1 className="text-xl font-semibold tracking-tight">Data Room</h1>
           <DataRoomBreadcrumb path={breadcrumbPath} onNavigate={navigateToBreadcrumbIndex} />
         </div>
 
-        <DataRoomToolbar onNewFolder={() => openDialog({ type: 'new-folder' })} />
+        <DataRoomToolbar
+          readOnly={readOnly}
+          onNewFolder={() => openDialog({ type: 'new-folder' })}
+          onShare={readOnly ? undefined : handleShareDataRoom}
+        />
 
         <DataRoomUpload
           canUpload={canUpload}
@@ -82,7 +118,9 @@ const DataRoom = () => {
 
         {!isLoading && !isError && currentItems.length === 0 && (
           <div className="px-3 py-12 text-center text-sm text-muted-foreground">
-            This folder is empty. Create a folder or upload files to get started.
+            {readOnly
+              ? 'This folder is empty.'
+              : 'This folder is empty. Create a folder or upload files to get started.'}
           </div>
         )}
 
@@ -92,11 +130,12 @@ const DataRoom = () => {
             <DataRoomItemRow
               key={item.id}
               item={item}
+              readOnly={readOnly}
               onOpen={handleOpenItem}
               onPreview={(selected) => openDialog({ type: 'preview', item: selected })}
               onRename={(selected) => openDialog({ type: 'rename', item: selected })}
               onMove={(selected) => openDialog({ type: 'move', item: selected })}
-              onShare={(selected) => openDialog({ type: 'share', item: selected })}
+              onShare={handleShareItem}
               onDelete={(selected) => openDialog({ type: 'delete', item: selected })}
             />
           ))}
@@ -111,6 +150,12 @@ const DataRoom = () => {
         onRename={renameItem}
         onDelete={deleteItem}
         onMove={moveItem}
+      />
+
+      <ShareDialog
+        target={shareTarget}
+        open={Boolean(shareTarget)}
+        onClose={() => setShareTarget(null)}
       />
     </section>
   )

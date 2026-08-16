@@ -1,13 +1,7 @@
-import DataRoom from '@/components/data-room/DataRoom'
+import AppRouter from '@/router'
 
 const App = () => {
-  return (
-    <div className="min-h-svh bg-background px-4 py-10">
-      <main className="mx-auto w-full max-w-3xl">
-        <DataRoom />
-      </main>
-    </div>
-  )
+  return <AppRouter />
 }
 
 export default App

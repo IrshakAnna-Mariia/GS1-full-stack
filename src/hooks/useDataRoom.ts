@@ -4,8 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   useCreateFileMutation,
   useCreateFolderMutation,
+  useFindOneQuery,
   useFindRootQuery,
   useGetContentsQuery,
+  useGetMineQuery,
   useRemoveFileMutation,
   useRemoveFolderMutation,
   useRequestUploadUrlMutation,
@@ -33,6 +35,14 @@ const useDataRoom = () => {
   const contentsQuery = useGetContentsQuery(currentFolderId ?? '', {
     skip: !currentFolderId,
   })
+  const { data: dataRoom } = useGetMineQuery()
+  const { data: currentFolder } = useFindOneQuery(currentFolderId ?? '', {
+    skip: !currentFolderId,
+  })
+
+  const readOnly = Boolean(
+    currentFolderId && dataRoom && currentFolder && currentFolder.dataRoomId !== dataRoom.id,
+  )
 
   const [createFolder] = useCreateFolderMutation()
   const [updateFolder] = useUpdateFolderMutation()
@@ -254,7 +264,8 @@ const useDataRoom = () => {
     breadcrumbPath: contents?.path ?? [],
     isLoading: activeQuery.isLoading || activeQuery.isFetching,
     isError: activeQuery.isError,
-    canUpload: currentFolderId !== null,
+    readOnly,
+    canUpload: currentFolderId !== null && !readOnly,
     uploads,
     navigateToFolder,
     navigateToBreadcrumbIndex,

@@ -24,7 +24,6 @@ export type DataRoomDialogState =
   | { type: 'new-folder' }
   | { type: 'rename'; item: DataRoomItem }
   | { type: 'delete'; item: DataRoomItem }
-  | { type: 'share'; item: DataRoomItem }
   | { type: 'preview'; item: DataRoomItem }
   | { type: 'move'; item: DataRoomItem }
 
@@ -186,34 +185,6 @@ const DataRoomDialogs = ({
                   }}
                 >
                   Delete
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={dialog.type === 'share'} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent>
-          {dialog.type === 'share' && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Share {dialog.item.name}</DialogTitle>
-                <DialogDescription>
-                  Anyone with this link can view this {dialog.item.type}.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="py-2">
-                <Input
-                  readOnly
-                  value={`https://data-room.example.com/share/${dialog.item.id}`}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button type="button" onClick={onClose}>
-                  Done
                 </Button>
               </DialogFooter>
             </>

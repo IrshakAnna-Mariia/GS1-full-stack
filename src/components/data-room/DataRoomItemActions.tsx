@@ -18,6 +18,7 @@ import {
 
 type DataRoomItemActionsProps = {
   item: DataRoomItem
+  readOnly?: boolean
   onPreview: (item: DataRoomItem) => void
   onRename: (item: DataRoomItem) => void
   onMove: (item: DataRoomItem) => void
@@ -27,6 +28,7 @@ type DataRoomItemActionsProps = {
 
 const DataRoomItemActions = ({
   item,
+  readOnly = false,
   onPreview,
   onRename,
   onMove,
@@ -34,6 +36,23 @@ const DataRoomItemActions = ({
   onDelete,
 }: DataRoomItemActionsProps) => {
   const isFolder = item.type === 'folder'
+
+  if (readOnly) {
+    if (isFolder) {
+      return null
+    }
+
+    return (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={`Preview ${item.name}`}
+        onClick={() => onPreview(item)}
+      >
+        <Eye />
+      </Button>
+    )
+  }
 
   return (
     <DropdownMenu>

@@ -32,5 +32,5 @@ export type RequestUploadUrlDto = {
 }
 
 export type FileSignedUrlResponse = {
-  signedUrl: string
+  signedUrl: string | null
 }
