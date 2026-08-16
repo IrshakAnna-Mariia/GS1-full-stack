@@ -4,7 +4,6 @@ import type {
   FileDto,
   FileSignedUrlResponse,
   RequestUploadUrlDto,
-  UpdateFileDto,
   UploadUrlResponse,
 } from '@/types/files'
 
@@ -36,20 +35,23 @@ export const filesApi = baseApi.injectEndpoints({
         'Folder',
       ],
     }),
-    update: builder.mutation<FileDto, { id: string } & UpdateFileDto>({
-      query: ({ id, ...body }) => ({
+    update: builder.mutation<
+      FileDto,
+      { id: string; name?: string; folderId?: string; previousFolderId?: string }
+    >({
+      query: ({ id, name, folderId }) => ({
         url: `/files/${id}`,
         method: 'PATCH',
-        body,
+        body: {
+          ...(name !== undefined ? { name } : {}),
+          ...(folderId !== undefined ? { folderId } : {}),
+        },
       }),
-      invalidatesTags: (result) =>
-        result
-          ? [
-              { type: 'File', id: result.folderId },
-              { type: 'Folder', id: result.folderId },
-              'Folder',
-            ]
-          : ['File', 'Folder'],
+      invalidatesTags: (_result, _error, arg) => [
+        ...(arg.folderId ? [{ type: 'Folder' as const, id: arg.folderId }] : []),
+        ...(arg.previousFolderId ? [{ type: 'Folder' as const, id: arg.previousFolderId }] : []),
+        'Folder',
+      ],
     }),
     remove: builder.mutation<void, { id: string; folderId: string }>({
       query: ({ id }) => ({

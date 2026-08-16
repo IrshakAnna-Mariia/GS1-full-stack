@@ -121,9 +121,12 @@ const useDataRoom = () => {
   )
 
   const moveItem = useCallback(
-    async (itemId: string, parentId: string | null) => {
-      if (!parentId) return
-      await updateFile({ id: itemId, folderId: parentId })
+    async (item: DataRoomItem, targetFolderId: string) => {
+      await updateFile({
+        id: item.id,
+        folderId: targetFolderId,
+        previousFolderId: item.parentId ?? undefined,
+      })
     },
     [updateFile],
   )

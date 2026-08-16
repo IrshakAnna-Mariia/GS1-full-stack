@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import DataRoomMoveDialog from '@/components/data-room/DataRoomMoveDialog'
 import DataRoomPreviewDialog from '@/components/data-room/DataRoomPreviewDialog'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,7 +36,7 @@ type DataRoomDialogsProps = {
   onCreateFolder: (name: string) => void
   onRename: (item: DataRoomItem, name: string) => Promise<void>
   onDelete: (item: DataRoomItem) => void
-  onMove: (itemId: string, targetFolderId: string | null) => void
+  onMove: (item: DataRoomItem, targetFolderId: string) => Promise<void>
 }
 
 const DataRoomDialogs = ({
@@ -226,49 +227,13 @@ const DataRoomDialogs = ({
         onClose={onClose}
       />
 
-      <Dialog open={dialog.type === 'move'} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent>
-          {dialog.type === 'move' && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Move {dialog.item.name}</DialogTitle>
-                <DialogDescription>Select a destination folder.</DialogDescription>
-              </DialogHeader>
-
-              <div className="max-h-60 space-y-1 overflow-y-auto py-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    onMove(dialog.item.id, null)
-                    onClose()
-                  }}
-                >
-                  Data Room (root)
-                </Button>
-
-                {folders
-                  .filter((folder) => folder.id !== dialog.item.id)
-                  .map((folder) => (
-                    <Button
-                      key={folder.id}
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        onMove(dialog.item.id, folder.id)
-                        onClose()
-                      }}
-                    >
-                      {folder.name}
-                    </Button>
-                  ))}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DataRoomMoveDialog
+        item={dialog.type === 'move' ? dialog.item : null}
+        folders={folders}
+        open={dialog.type === 'move'}
+        onClose={onClose}
+        onMove={onMove}
+      />
 
       {!isOpen && null}
     </>
