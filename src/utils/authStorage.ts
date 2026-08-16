@@ -8,7 +8,8 @@ export const getAccessToken = (): string | null =>
 
 export const getRefreshToken = (): string | null => localStorage.getItem(REFRESH_TOKEN_KEY)
 
-export const hasStoredSession = (): boolean => Boolean(getAccessToken())
+export const hasStoredSession = (): boolean =>
+  Boolean(getAccessToken() || getRefreshToken())
 
 export const saveSession = (session: AuthSessionDto): void => {
   if (session.accessToken) {
