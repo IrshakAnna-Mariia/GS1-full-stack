@@ -3,8 +3,15 @@ import type { AuthSessionDto } from '@/types/auth'
 const ACCESS_TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
 
-export const getAccessToken = (): string | null =>
-  import.meta.env.VITE_ACCESS_TOKEN ?? localStorage.getItem(ACCESS_TOKEN_KEY)
+const envToken = import.meta.env.VITE_ACCESS_TOKEN
+
+export const getAccessToken = (): string | null => {
+  if (typeof envToken === 'string' && envToken.trim().length > 0) {
+    return envToken.trim()
+  }
+
+  return localStorage.getItem(ACCESS_TOKEN_KEY)
+}
 
 export const getRefreshToken = (): string | null => localStorage.getItem(REFRESH_TOKEN_KEY)
 

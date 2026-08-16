@@ -95,15 +95,29 @@ Set Supabase and database env vars from `.env.example` in the Vercel project set
 
 ### Frontend
 
-Set this **before build** (Vite bakes env vars in at build time):
+Either approach works:
+
+**Option A — `/api` proxy (recommended, zero env setup on Vercel)**
+
+Keep the default from `.env.example`:
+
+```env
+VITE_API_BASE_URL=/api
+```
+
+`vercel.json` rewrites `/api/*` to the deployed NestJS backend.
+
+**Option B — direct backend URL**
+
+Set this before build (Vite bakes env vars in at build time):
 
 ```env
 VITE_API_BASE_URL=https://gs-1-full-stack-be.vercel.app
 ```
 
-Use your real backend URL. The default `/api` only works locally with the Vite dev proxy.
+Redeploy the frontend after changing env vars.
 
-`/auth/me` requires `Authorization: Bearer <access_token>`. Opening that URL in the browser tab will always return `Missing or invalid authorization header` — that endpoint is for the app to call after login, not for direct visits.
+`/auth/me` requires `Authorization: Bearer <access_token>`. Opening that URL in a browser tab will always return `Missing or invalid authorization header`.
 
 ## Scripts
 
