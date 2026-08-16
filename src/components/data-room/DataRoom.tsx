@@ -105,6 +105,7 @@ const DataRoom = () => {
       <DataRoomDialogs
         dialog={dialog}
         folders={folders}
+        folderItems={currentItems}
         onClose={closeDialog}
         onCreateFolder={createFolder}
         onRename={renameItem}
