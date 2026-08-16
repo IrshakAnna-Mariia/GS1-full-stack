@@ -1,6 +1,6 @@
 import DataRoom from '@/components/data-room/DataRoom'
 
-const App = () => {
+const DataRoomPage = () => {
   return (
     <div className="min-h-svh bg-background px-4 py-10">
       <main className="mx-auto w-full max-w-3xl">
@@ -10,4 +10,4 @@ const App = () => {
   )
 }
 
-export default App
+export default DataRoomPage
