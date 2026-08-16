@@ -16,6 +16,34 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
+const refreshStoredSession = async (
+  api: Parameters<BaseQueryFn>[1],
+  extraOptions: Parameters<BaseQueryFn>[2],
+): Promise<boolean> => {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) {
+    return false
+  }
+
+  const refreshResult = await rawBaseQuery(
+    {
+      url: '/auth/refresh',
+      method: 'POST',
+      body: { refreshToken },
+    },
+    api,
+    extraOptions,
+  )
+
+  if (refreshResult.data) {
+    saveSession(refreshResult.data as AuthSessionDto)
+    return true
+  }
+
+  clearSession()
+  return false
+}
+
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   prepareHeaders: (headers) => {
@@ -34,35 +62,20 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+  if (!getAccessToken() && getRefreshToken()) {
+    await refreshStoredSession(api, extraOptions)
+  }
+
   let result = await rawBaseQuery(args, api, extraOptions)
 
   if (result.error?.status !== 401) {
     return result
   }
 
-  const refreshToken = getRefreshToken()
-  if (!refreshToken) {
-    clearSession()
-    return result
-  }
-
-  const refreshResult = await rawBaseQuery(
-    {
-      url: '/auth/refresh',
-      method: 'POST',
-      body: { refreshToken },
-    },
-    api,
-    extraOptions,
-  )
-
-  if (refreshResult.data) {
-    saveSession(refreshResult.data as AuthSessionDto)
+  if (await refreshStoredSession(api, extraOptions)) {
     result = await rawBaseQuery(args, api, extraOptions)
-    return result
   }
 
-  clearSession()
   return result
 }
 
