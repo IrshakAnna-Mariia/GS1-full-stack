@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import DataRoomPreviewDialog from '@/components/data-room/DataRoomPreviewDialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -167,28 +168,11 @@ const DataRoomDialogs = ({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={dialog.type === 'preview'} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="sm:max-w-lg">
-          {dialog.type === 'preview' && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{dialog.item.name}</DialogTitle>
-                <DialogDescription>File preview</DialogDescription>
-              </DialogHeader>
-
-              <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed bg-muted/40 p-8 text-center text-sm text-muted-foreground">
-                Preview placeholder for {dialog.item.name}
-              </div>
-
-              <DialogFooter>
-                <Button type="button" onClick={onClose}>
-                  Close
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DataRoomPreviewDialog
+        item={dialog.type === 'preview' ? dialog.item : null}
+        open={dialog.type === 'preview'}
+        onClose={onClose}
+      />
 
       <Dialog open={dialog.type === 'move'} onOpenChange={(open) => !open && onClose()}>
         <DialogContent>

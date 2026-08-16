@@ -2,6 +2,7 @@ import { baseApi } from '@/store/baseApi'
 import type {
   CreateFileDto,
   FileDto,
+  FileSignedUrlResponse,
   RequestUploadUrlDto,
   UpdateFileDto,
   UploadUrlResponse,
@@ -12,6 +13,9 @@ export const filesApi = baseApi.injectEndpoints({
     findByFolder: builder.query<FileDto[], string>({
       query: (folderId) => `/files?folderId=${folderId}`,
       providesTags: (_result, _error, folderId) => [{ type: 'File', id: folderId }],
+    }),
+    getSignedUrl: builder.query<FileSignedUrlResponse, string>({
+      query: (id) => `/files/${id}/signed-url`,
     }),
     requestUploadUrl: builder.mutation<UploadUrlResponse, RequestUploadUrlDto>({
       query: (body) => ({
@@ -63,6 +67,8 @@ export const filesApi = baseApi.injectEndpoints({
 
 export const {
   useFindByFolderQuery,
+  useGetSignedUrlQuery,
+  useLazyGetSignedUrlQuery,
   useRequestUploadUrlMutation,
   useCreateMutation: useCreateFileMutation,
   useUpdateMutation: useUpdateFileMutation,

@@ -30,3 +30,7 @@ export type RequestUploadUrlDto = {
   folderId: string
   contentType: string
 }
+
+export type FileSignedUrlResponse = {
+  signedUrl: string
+}
